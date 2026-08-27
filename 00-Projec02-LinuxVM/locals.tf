@@ -35,7 +35,6 @@ locals {
     "120" : "22"
   }
 
-
   common_tags = {
     owners      = local.owners
     environment = local.environment

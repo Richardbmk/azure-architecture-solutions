@@ -1,11 +1,11 @@
 #!/bin/sh
-#sudo yum update -y
-sudo yum install -y httpd
-sudo systemctl enable httpd
-sudo systemctl start httpd  
-sudo systemctl stop firewalld
-sudo systemctl disable firewalld
-sudo chmod -R 777 /var/www/html 
+sudo apt-get update -y
+sudo apt-get install -y apache2
+sudo systemctl enable apache2
+sudo systemctl start apache2
+sudo systemctl stop ufw
+sudo systemctl disable ufw
+sudo chmod -R 777 /var/www/html
 sudo echo "Welcome to myFitness - WebVM App1 - VM Hostname: $(hostname)" > /var/www/html/index.html
 sudo mkdir /var/www/html/app1
 sudo echo "Welcome to myFitness - WebVM App1 - VM Hostname: $(hostname)" > /var/www/html/app1/hostname.html

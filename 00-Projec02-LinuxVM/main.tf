@@ -206,28 +206,27 @@ resource "azurerm_network_interface_security_group_association" "web_vmnic_nsg_a
 
 # Azure Linux Virtual Machine
 resource "azurerm_linux_virtual_machine" "web_linuxvm" {
-  name                  = "${local.resource_group_prefix}-web-linuxvm"
-  computer_name         = "web-linux-vm" # Hostname of the VM (Optional)
-  resource_group_name   = data.azurerm_resource_group.rg.name
-  location              = data.azurerm_resource_group.rg.location
-  size                  = "Standard_DS1_v2"
-  admin_username        = "azureuser"
-  network_interface_ids = [azurerm_network_interface.web_linuxvm_nic.id]
+  name = "${local.resource_group_prefix}-web-linuxvm"
+  computer_name = "web-linux-vm" # Hostname of the VM (Optional)
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location = data.azurerm_resource_group.rg.location
+  size = "Standard_DS1_v2"
+  admin_username = "azureuser"
+  network_interface_ids = [ azurerm_network_interface.web_linuxvm_nic.id ]
   admin_ssh_key {
-    username   = "azureuser"
+    username = "azureuser"
     public_key = file("~/.ssh/sre-keys.pub")
   }
   os_disk {
-    caching              = "ReadWrite"
+    caching = "ReadWrite"
     storage_account_type = "Standard_LRS"
-  }
+  }  
   source_image_reference {
-    publisher = "RedHat"
-    offer     = "RHEL"
-    sku       = "83-gen2"
+    publisher = "canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts-gen2"
     version   = "latest"
   }
 
-  #custom_data = filebase64("${path.module}/scripts/redhat-webvm-script.sh")
-  user_data = filebase64("${path.module}/scripts/redhat-webvm-script.sh")
+  custom_data = filebase64("${path.module}/scripts/redhat-webvm-script.sh")
 }
