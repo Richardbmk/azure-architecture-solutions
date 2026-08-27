@@ -5,7 +5,6 @@ locals {
   resource_group_prefix = "${var.business_division}-${var.environment}"
   name                  = "${local.owners}-${local.environment}"
 
-  ## Locals Block for Security Rules
   web_inbound_ports_map = {
     "100" : "80", # If the key starts with a number, you must use the colon syntax ":" instead of "="
     "110" : "443",
@@ -28,6 +27,12 @@ locals {
   bastion_inbound_ports_map = {
     "100" : "22", # If the key starts with a number, you must use the colon syntax ":" instead of "="
     "110" : "3389"
+  }
+
+  web_vmnic_inbound_ports_map = {
+    "100" : "80", # If the key starts with a number, you must use the colon syntax ":" instead of "="
+    "110" : "443",
+    "120" : "22"
   }
 
 

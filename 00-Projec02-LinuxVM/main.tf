@@ -172,3 +172,62 @@ resource "azurerm_subnet_network_security_group_association" "bastion_subnet_nsg
 }
 
 
+# Create Public IP Address
+resource "azurerm_public_ip" "web_linuxvm_publicip" {
+  name                = "${local.resource_group_prefix}-web-linuxvm-publicip"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  domain_name_label   = "app1-vm-${random_string.default.id}"
+}
+
+# Create Network Interface
+resource "azurerm_network_interface" "web_linuxvm_nic" {
+  name                = "${local.resource_group_prefix}-web-linuxvm-nic"
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+
+  ip_configuration {
+    name                          = "web-linuxvm-ip-1"
+    subnet_id                     = azurerm_subnet.websubnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.web_linuxvm_publicip.id
+  }
+}
+
+# Associate NSG and Linux VM NIC
+resource "azurerm_network_interface_security_group_association" "web_vmnic_nsg_associate" {
+  depends_on                = [azurerm_network_security_rule.web_vmnic_nsg_rule_inbound]
+  network_interface_id      = azurerm_network_interface.web_linuxvm_nic.id
+  network_security_group_id = azurerm_network_security_group.web_vmnic_nsg.id
+}
+
+
+# Azure Linux Virtual Machine
+resource "azurerm_linux_virtual_machine" "web_linuxvm" {
+  name                  = "${local.resource_group_prefix}-web-linuxvm"
+  computer_name         = "web-linux-vm" # Hostname of the VM (Optional)
+  resource_group_name   = data.azurerm_resource_group.rg.name
+  location              = data.azurerm_resource_group.rg.location
+  size                  = "Standard_DS1_v2"
+  admin_username        = "azureuser"
+  network_interface_ids = [azurerm_network_interface.web_linuxvm_nic.id]
+  admin_ssh_key {
+    username   = "azureuser"
+    public_key = file("~/.ssh/sre-keys.pub")
+  }
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+  source_image_reference {
+    publisher = "RedHat"
+    offer     = "RHEL"
+    sku       = "83-gen2"
+    version   = "latest"
+  }
+
+  #custom_data = filebase64("${path.module}/scripts/redhat-webvm-script.sh")
+  user_data = filebase64("${path.module}/scripts/redhat-webvm-script.sh")
+}
