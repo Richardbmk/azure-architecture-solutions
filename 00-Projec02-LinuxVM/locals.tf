@@ -1,10 +1,20 @@
-# Define Local Values in Terraform
+# Define Local Values in Terraform for General Use
 locals {
   owners                = var.business_division
   environment           = var.environment
   resource_group_prefix = "${var.business_division}-${var.environment}"
   name                  = "${local.owners}-${local.environment}"
 
+  common_tags = {
+    owners      = local.owners
+    environment = local.environment
+  }
+}
+
+
+
+# Define Local Values in Terraform for NSG Rules
+locals {
   web_inbound_ports_map = {
     "100" : "80", # If the key starts with a number, you must use the colon syntax ":" instead of "="
     "110" : "443",
@@ -33,10 +43,5 @@ locals {
     "100" : "80", # If the key starts with a number, you must use the colon syntax ":" instead of "="
     "110" : "443",
     "120" : "22"
-  }
-
-  common_tags = {
-    owners      = local.owners
-    environment = local.environment
   }
 }
