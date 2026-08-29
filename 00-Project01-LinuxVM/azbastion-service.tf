@@ -17,7 +17,7 @@ resource "azurerm_public_ip" "bastion_service_public_ip" {
   sku                 = "Standard"
 }
 
-# Resource-3: Azure Bastion Service Host
+# Azure Bastion Service Host
 resource "azurerm_bastion_host" "bastion_host" {
   name                = "${local.resource_group_prefix}-bastion-service"
   location            = data.azurerm_resource_group.rg.location
