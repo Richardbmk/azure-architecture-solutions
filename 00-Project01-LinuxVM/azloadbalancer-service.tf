@@ -8,6 +8,32 @@ resource "azurerm_public_ip" "web_lbpublicip" {
   tags                = local.common_tags
 }
 
+# Dedicated Public IP for NAT Gateway outbound traffic (must be separate from the LB's public IP)
+resource "azurerm_public_ip" "web_natgw_publicip" {
+  name                = "${local.resource_group_prefix}-natgw-publicip"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  tags                = local.common_tags
+}
+
+# NAT Gateway providing outbound internet access for the web subnet
+resource "azurerm_nat_gateway" "web_natgw" {
+  name                    = "${local.resource_group_prefix}-web-natgw"
+  resource_group_name     = data.azurerm_resource_group.rg.name
+  location                = data.azurerm_resource_group.rg.location
+  sku_name                = "Standard"
+  idle_timeout_in_minutes = 10
+  tags                    = local.common_tags
+}
+
+# Attach the public IP to the NAT Gateway
+resource "azurerm_nat_gateway_public_ip_association" "web_natgw_publicip_association" {
+  nat_gateway_id       = azurerm_nat_gateway.web_natgw.id
+  public_ip_address_id = azurerm_public_ip.web_natgw_publicip.id
+}
+
 # Create Azure Standard Load Balancer
 resource "azurerm_lb" "web_lb" {
   name                = "${local.resource_group_prefix}-web-lb"
@@ -18,6 +44,13 @@ resource "azurerm_lb" "web_lb" {
     name                 = "web-lb-publicip-1"
     public_ip_address_id = azurerm_public_ip.web_lbpublicip.id
   }
+}
+
+
+# Associate the NAT Gateway with the web subnet
+resource "azurerm_subnet_nat_gateway_association" "web_subnet_natgw_association" {
+  subnet_id      = azurerm_subnet.websubnet.id
+  nat_gateway_id = azurerm_nat_gateway.web_natgw.id
 }
 
 # Create LB Backend Pool
@@ -44,8 +77,6 @@ resource "azurerm_lb_rule" "web_lb_rule_app1" {
   probe_id                       = azurerm_lb_probe.web_lb_probe.id
   loadbalancer_id                = azurerm_lb.web_lb.id
   backend_address_pool_ids       = [azurerm_lb_backend_address_pool.web_lb_backend_address_pool.id]
-  # Outbound SNAT is handled by azurerm_lb_outbound_rule.web_lb_outbound_rule on the same frontend IP config
-  disable_outbound_snat = true
 }
 
 # Associate Network Interface and Standard Load Balancer
@@ -54,35 +85,4 @@ resource "azurerm_network_interface_backend_address_pool_association" "web_nic_l
   network_interface_id    = azurerm_network_interface.web_linuxvm_nic.id
   ip_configuration_name   = azurerm_network_interface.web_linuxvm_nic.ip_configuration[0].name
   backend_address_pool_id = azurerm_lb_backend_address_pool.web_lb_backend_address_pool.id
-}
-
-# Standard LB does not provide implicit outbound SNAT like Basic LB, so an explicit outbound rule is required for VMs without a public IP to reach the internet
-resource "azurerm_lb_outbound_rule" "web_lb_outbound_rule" {
-  depends_on              = [azurerm_lb_rule.web_lb_rule_app1]
-  name                    = "web-outbound-rule"
-  loadbalancer_id         = azurerm_lb.web_lb.id
-  protocol                = "All"
-  backend_address_pool_id = azurerm_lb_backend_address_pool.web_lb_backend_address_pool.id
-  frontend_ip_configuration {
-    name = azurerm_lb.web_lb.frontend_ip_configuration[0].name
-  }
-}
-
-# Azure LB Inbound NAT Rule
-resource "azurerm_lb_nat_rule" "web_lb_inbound_nat_rule_22" {
-  depends_on                     = [azurerm_linux_virtual_machine.web_linuxvm]
-  name                           = "ssh-1022-vm-22"
-  protocol                       = "Tcp"
-  frontend_port                  = 1022
-  backend_port                   = 22
-  frontend_ip_configuration_name = azurerm_lb.web_lb.frontend_ip_configuration[0].name
-  loadbalancer_id                = azurerm_lb.web_lb.id
-  resource_group_name            = data.azurerm_resource_group.rg.name
-}
-
-# Associate LB NAT Rule and VM Network Interface
-resource "azurerm_network_interface_nat_rule_association" "web_nic_nat_rule_associate" {
-  network_interface_id  = azurerm_network_interface.web_linuxvm_nic.id
-  ip_configuration_name = azurerm_network_interface.web_linuxvm_nic.ip_configuration[0].name
-  nat_rule_id           = azurerm_lb_nat_rule.web_lb_inbound_nat_rule_22.id
 }
