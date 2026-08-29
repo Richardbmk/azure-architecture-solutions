@@ -231,7 +231,8 @@ resource "azurerm_linux_virtual_machine" "bastion_host_linuxvm" {
 
 # Create Network Interface
 resource "azurerm_network_interface" "web_linuxvm_nic" {
-  name                = "${local.resource_group_prefix}-web-linuxvm-nic"
+  for_each = var.web_linuxvm_instance_count
+  name                = "${local.resource_group_prefix}-web-linuxvm-nic-${each.key}"
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
 
@@ -244,13 +245,14 @@ resource "azurerm_network_interface" "web_linuxvm_nic" {
 
 # Azure Linux Virtual Machine
 resource "azurerm_linux_virtual_machine" "web_linuxvm" {
-  name                  = "${local.resource_group_prefix}-web-linuxvm"
-  computer_name         = "web-linux-vm" # Hostname of the VM (Optional)
+  for_each = var.web_linuxvm_instance_count
+  name                  = "${local.resource_group_prefix}-web-linuxvm-${each.key}"
+  computer_name         = "web-linux-vm-${each.key}" # Hostname of the VM (Optional)
   resource_group_name   = data.azurerm_resource_group.rg.name
   location              = data.azurerm_resource_group.rg.location
   size                  = "Standard_DS1_v2"
   admin_username        = "azureuser"
-  network_interface_ids = [azurerm_network_interface.web_linuxvm_nic.id]
+  network_interface_ids = [azurerm_network_interface.web_linuxvm_nic[each.key].id]
   admin_ssh_key {
     username   = "azureuser"
     public_key = file("~/.ssh/sre-keys.pub")
@@ -266,5 +268,5 @@ resource "azurerm_linux_virtual_machine" "web_linuxvm" {
     version   = "latest"
   }
 
-  custom_data = filebase64("${path.module}/scripts/redhat-webvm-script.sh")
+  custom_data = filebase64("${path.module}/scripts/ubuntu-webvm-script.sh")
 }

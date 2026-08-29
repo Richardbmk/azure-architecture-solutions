@@ -113,6 +113,16 @@ variable "bastion_service_address_prefixes" {
   default     = ["10.0.5.0/27"]
 }
 
+# Web Linux VM Instance Count
+variable "web_linuxvm_instance_count" {
+  description = "Web Linux VM Instance Count"
+  type = map(string)
+  default = {
+    "vm1" = "1022",
+    "vm2" = "2022"
+  }
+}
+
 
 
 
