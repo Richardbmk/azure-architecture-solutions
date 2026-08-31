@@ -68,3 +68,53 @@ output "web_vmss_id" {
   description = "Web Virtual Machine Scale Set ID"
   value       = azurerm_linux_virtual_machine_scale_set.web_vmss.id
 }
+
+# Storage Account Outputs
+output "storage_account_primary_access_key" {
+  value     = azurerm_storage_account.storage_account.primary_access_key
+  sensitive = true
+}
+output "storage_account_primary_web_endpoint" {
+  value = azurerm_storage_account.storage_account.primary_web_endpoint
+}
+output "storage_account_primary_web_host" {
+  value = azurerm_storage_account.storage_account.primary_web_host
+}
+output "storage_account_name" {
+  value = azurerm_storage_account.storage_account.name
+}
+
+# NAT Gateway ID
+output "nat_gw_id" {
+  description = "Azure NAT Gateway ID"
+  value       = azurerm_nat_gateway.web_natgw.id
+}
+
+# NAT Gateway Public IP
+output "nat_gw_public_ip" {
+  description = "Azure NAT Gateway Public IP Address"
+  value       = azurerm_public_ip.web_natgw_publicip.ip_address
+}
+
+output "app_vmss_id" {
+  description = "App Virtual Machine Scale Set ID"
+  value       = azurerm_linux_virtual_machine_scale_set.app_vmss.id
+}
+
+# LB Private IP Address List
+output "app_lb_private_ip_addresses" {
+  description = "Load Balancer Public Address"
+  value       = [azurerm_lb.app_lb.private_ip_addresses]
+}
+
+# Load Balancer ID
+# output "app_lb_id" {
+#   description = "The Internal Load Balancer ID."
+#   value       = azurerm_lb.app_lb.id
+# }
+
+# Load Balancer Frontend IP Configuration Block
+# output "app_lb_frontend_ip_configuration" {
+#   description = "LB frontend_ip_configuration Block"
+#   value       = [azurerm_lb.app_lb.frontend_ip_configuration]
+# }

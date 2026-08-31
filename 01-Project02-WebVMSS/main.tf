@@ -250,11 +250,32 @@ resource "azurerm_network_security_group" "web_vmss_nsg" {
       destination_address_prefix = "*"
     }
   }
+}
 
+resource "azurerm_network_security_group" "app_vmss_nsg" {
+  name                = "${local.resource_group_prefix}-app-vmss-nsg"
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+
+  dynamic "security_rule" {
+    for_each = var.app_vmss_nsg_inbound_ports
+    content {
+      name                       = "inbound-rule-${security_rule.key}"
+      description                = "Inbound Rule ${security_rule.key}"
+      priority                   = sum([100, security_rule.key])
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = security_rule.value
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+    }
+  }
 }
 
 
-# Resource: Azure Linux Virtual Machine Scale Set - App1
+# Azure Linux Virtual Machine Scale Set - App1: Web Tier
 resource "azurerm_linux_virtual_machine_scale_set" "web_vmss" {
   name = "${local.resource_group_prefix}-web-vmss"
   #computer_name_prefix = "vmss-app1" # if name argument is not valid one for VMs, we can use this for our VM Names
@@ -263,6 +284,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "web_vmss" {
   sku                 = "Standard_DS1_v2"
   instances           = 2
   admin_username      = "azureuser"
+  health_probe_id     = azurerm_lb_probe.web_lb_probe.id
 
   admin_ssh_key {
     username   = "azureuser"
@@ -294,10 +316,91 @@ resource "azurerm_linux_virtual_machine_scale_set" "web_vmss" {
     }
   }
 
-  custom_data = filebase64("${path.module}/scripts/ubuntu-webvm-script.sh")
+  custom_data = base64encode(templatefile("${path.module}/scripts/ubuntu-webvm-script.sh", {
+    storage_account_name = azurerm_storage_account.storage_account.name
+    storage_account_key  = azurerm_storage_account.storage_account.primary_access_key
+    storage_container    = azurerm_storage_container.httpd_files_container.name
+  }))
 
   tags = local.common_tags
 }
 
 
+# Resource: Azure Linux Virtual Machine Scale Set - App1
+resource "azurerm_linux_virtual_machine_scale_set" "app_vmss" {
+  name = "${local.resource_group_prefix}-app-vmss"
+  #computer_name_prefix = "vmss-app1" # if name argument is not valid one for VMs, we can use this for VM Names
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  sku                 = "Standard_DS1_v2"
+  instances           = 2
+  admin_username      = "azureuser"
+
+  admin_ssh_key {
+    username   = "azureuser"
+    public_key = file("~/.ssh/sre-keys.pub")
+  }
+
+  source_image_reference {
+    publisher = "canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts-gen2"
+    version   = "latest"
+  }
+
+  os_disk {
+    storage_account_type = "Standard_LRS"
+    caching              = "ReadWrite"
+  }
+
+  upgrade_mode = "Automatic"
+
+  network_interface {
+    name                      = "app-vmss-nic"
+    primary                   = true
+    network_security_group_id = azurerm_network_security_group.app_vmss_nsg.id
+    ip_configuration {
+      name                                   = "internal"
+      primary                                = true
+      subnet_id                              = azurerm_subnet.appsubnet.id
+      load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.app_lb_backend_address_pool.id]
+    }
+  }
+  custom_data = filebase64("${path.module}/scripts/ubuntu-appvm-script.sh")
+}
+
+
+# Create Azure Storage account
+resource "azurerm_storage_account" "storage_account" {
+  name                = "${var.storage_account_name}${random_string.default.id}" # Storage account name must be globally unique, so we append a random string to the end of the name
+  resource_group_name = data.azurerm_resource_group.rg.name
+
+  location                 = data.azurerm_resource_group.rg.location
+  account_tier             = var.storage_account_tier
+  account_replication_type = var.storage_account_replication_type
+  account_kind             = var.storage_account_kind
+}
+
+resource "azurerm_storage_account_static_website" "storage_account" {
+  storage_account_id = azurerm_storage_account.storage_account.id
+  error_404_document = var.static_website_error_404_document
+  index_document     = var.static_website_index_document
+}
+
+# httpd files Container
+resource "azurerm_storage_container" "httpd_files_container" {
+  name                  = "httpd-files-container"
+  storage_account_id    = azurerm_storage_account.storage_account.id
+  container_access_type = "private"
+}
+
+# Resource-3: httpd conf files upload to httpd-files-container
+resource "azurerm_storage_blob" "httpd_files_container_blob" {
+  for_each = toset(local.httpd_conf_files)
+
+  name                 = each.value
+  storage_container_id = azurerm_storage_container.httpd_files_container.id
+  type                 = "Block"
+  source               = "${path.module}/scripts/${each.value}"
+}
 

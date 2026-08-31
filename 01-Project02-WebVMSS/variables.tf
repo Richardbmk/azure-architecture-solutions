@@ -129,6 +129,40 @@ variable "web_vmss_nsg_inbound_ports" {
   default     = ["22", "80", "443"]
 }
 
+variable "app_vmss_nsg_inbound_ports" {
+  description = "App VMSS NSG Inbound Ports"
+  type        = list(string)
+  default     = [22, 80, 443]
+}
+
+
+# Input variable definitions for Storage Account and Static Website
+variable "storage_account_name" {
+  description = "The name of the storage account"
+  type        = string
+}
+variable "storage_account_tier" {
+  description = "Storage Account Tier"
+  type        = string
+}
+variable "storage_account_replication_type" {
+  description = "Storage Account Replication Type"
+  type        = string
+}
+variable "storage_account_kind" {
+  description = "Storage Account Kind"
+  type        = string
+}
+variable "static_website_index_document" {
+  description = "static website index document"
+  type        = string
+}
+variable "static_website_error_404_document" {
+  description = "static website error 404 document"
+  type        = string
+}
+
+
 
 
 

@@ -45,3 +45,8 @@ locals {
     "120" : "22"
   }
 }
+
+# Locals for storage account configuration
+locals {
+  httpd_conf_files = ["app1.conf"]
+}
