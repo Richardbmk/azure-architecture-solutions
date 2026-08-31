@@ -295,6 +295,8 @@ resource "azurerm_linux_virtual_machine_scale_set" "web_vmss" {
   }
 
   custom_data = filebase64("${path.module}/scripts/ubuntu-webvm-script.sh")
+
+  tags = local.common_tags
 }
 
 
