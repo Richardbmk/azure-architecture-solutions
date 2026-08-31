@@ -116,12 +116,19 @@ variable "bastion_service_address_prefixes" {
 # Web Linux VM Instance Count
 variable "web_linuxvm_instance_count" {
   description = "Web Linux VM Instance Count"
-  type = map(string)
+  type        = map(string)
   default = {
     "vm1" = "1022",
     "vm2" = "2022"
   }
 }
+
+variable "web_vmss_nsg_inbound_ports" {
+  description = "Web VMSS NSG Inbound Ports"
+  type        = list(string)
+  default     = ["22", "80", "443"]
+}
+
 
 
 

@@ -225,41 +225,48 @@ resource "azurerm_linux_virtual_machine" "bastion_host_linuxvm" {
   }
 }
 
-###########################################
-# Bastion Host (Azure Bastion) - Optional #
-###########################################
+# ######################################
+# # Virtual Machine Scale Set (VMSS) - #
+# ######################################
 
-# Create Network Interface
-resource "azurerm_network_interface" "web_linuxvm_nic" {
-  for_each = var.web_linuxvm_instance_count
-  name                = "${local.resource_group_prefix}-web-linuxvm-nic-${each.key}"
+# Create Network Security Group using Terraform Dynamic Blocks
+resource "azurerm_network_security_group" "web_vmss_nsg" {
+  name                = "${local.resource_group_prefix}-web-vmss-nsg"
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
 
-  ip_configuration {
-    name                          = "web-linuxvm-ip-1"
-    subnet_id                     = azurerm_subnet.websubnet.id
-    private_ip_address_allocation = "Dynamic"
+  dynamic "security_rule" {
+    for_each = var.web_vmss_nsg_inbound_ports
+    content {
+      name                       = "inbound-rule-${security_rule.key}"
+      description                = "Inbound Rule ${security_rule.key}"
+      priority                   = sum([100, security_rule.key])
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_range     = security_rule.value
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+    }
   }
+
 }
 
-# Azure Linux Virtual Machine
-resource "azurerm_linux_virtual_machine" "web_linuxvm" {
-  for_each = var.web_linuxvm_instance_count
-  name                  = "${local.resource_group_prefix}-web-linuxvm-${each.key}"
-  computer_name         = "web-linux-vm-${each.key}" # Hostname of the VM (Optional)
-  resource_group_name   = data.azurerm_resource_group.rg.name
-  location              = data.azurerm_resource_group.rg.location
-  size                  = "Standard_DS1_v2"
-  admin_username        = "azureuser"
-  network_interface_ids = [azurerm_network_interface.web_linuxvm_nic[each.key].id]
+
+# Resource: Azure Linux Virtual Machine Scale Set - App1
+resource "azurerm_linux_virtual_machine_scale_set" "web_vmss" {
+  name = "${local.resource_group_prefix}-web-vmss"
+  #computer_name_prefix = "vmss-app1" # if name argument is not valid one for VMs, we can use this for our VM Names
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  sku                 = "Standard_DS1_v2"
+  instances           = 2
+  admin_username      = "azureuser"
+
   admin_ssh_key {
     username   = "azureuser"
     public_key = file("~/.ssh/sre-keys.pub")
-  }
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
   }
   source_image_reference {
     publisher = "canonical"
@@ -268,5 +275,27 @@ resource "azurerm_linux_virtual_machine" "web_linuxvm" {
     version   = "latest"
   }
 
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  upgrade_mode = "Automatic"
+
+  network_interface {
+    name                      = "web-vmss-nic"
+    primary                   = "true"
+    network_security_group_id = azurerm_network_security_group.web_vmss_nsg.id
+    ip_configuration {
+      name                                   = "internal"
+      primary                                = true
+      subnet_id                              = azurerm_subnet.websubnet.id
+      load_balancer_backend_address_pool_ids = [azurerm_lb_backend_address_pool.web_lb_backend_address_pool.id]
+    }
+  }
+
   custom_data = filebase64("${path.module}/scripts/ubuntu-webvm-script.sh")
 }
+
+
+

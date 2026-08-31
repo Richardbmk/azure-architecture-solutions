@@ -225,9 +225,9 @@ resource "azurerm_linux_virtual_machine" "bastion_host_linuxvm" {
   }
 }
 
-###########################################
-# Bastion Host (Azure Bastion) - Optional #
-###########################################
+##################################
+# Linux Web Server VM - Optional #
+##################################
 
 # Create Network Interface
 resource "azurerm_network_interface" "web_linuxvm_nic" {
