@@ -118,3 +118,9 @@ output "app_lb_private_ip_addresses" {
 #   description = "LB frontend_ip_configuration Block"
 #   value       = [azurerm_lb.app_lb.frontend_ip_configuration]
 # }
+
+# FQDN Outputs
+output "fqdn_app_lb" {
+  description = "App LB FQDN"
+  value       = azurerm_private_dns_a_record.app_lb_dns_record.fqdn
+}

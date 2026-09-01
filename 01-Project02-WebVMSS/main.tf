@@ -404,3 +404,28 @@ resource "azurerm_storage_blob" "httpd_files_container_blob" {
   source               = "${path.module}/scripts/${each.value}"
 }
 
+# #####################################
+# # Private DNS Zones Configuration - #
+# #####################################
+
+# Create Azure Private DNS Zone
+resource "azurerm_private_dns_zone" "private_dns_zone" {
+  name                = "ricardoboriba.ninja"
+  resource_group_name = data.azurerm_resource_group.rg.name
+}
+
+# Associate Private DNS Zone to Virtual Network
+resource "azurerm_private_dns_zone_virtual_network_link" "private_dns_zone_vnet_associate" {
+  name                = "${local.resource_group_prefix}-private-dns-zone-vnet-associate"
+  private_dns_zone_id = azurerm_private_dns_zone.private_dns_zone.id
+  virtual_network_id  = azurerm_virtual_network.vnet.id
+}
+
+# Internal Load Balancer DNS A Record
+resource "azurerm_private_dns_a_record" "app_lb_dns_record" {
+  depends_on          = [azurerm_lb.app_lb]
+  name                = "applb"
+  private_dns_zone_id = azurerm_private_dns_zone.private_dns_zone.id
+  ttl                 = 300
+  records             = ["${azurerm_lb.app_lb.frontend_ip_configuration[0].private_ip_address}"]
+}
