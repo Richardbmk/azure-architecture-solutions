@@ -19,4 +19,12 @@ terraform {
       version = ">= 3.0"
     }
   }
+
+# # Terraform State Storage to Azure Storage Container
+#   backend "azurerm" {
+#     resource_group_name   = "kml_rg_main-1883c24aa0fc4ef8"
+#     storage_account_name  = "rdobmkterraformstate201"
+#     container_name        = "tfstatefiles"
+#     key                   = "project-02-eastus2-terraform.tfstate"
+#   }
 }
