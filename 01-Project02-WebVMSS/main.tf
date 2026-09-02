@@ -429,3 +429,62 @@ resource "azurerm_private_dns_a_record" "app_lb_dns_record" {
   ttl                 = 300
   records             = ["${azurerm_lb.app_lb.frontend_ip_configuration[0].private_ip_address}"]
 }
+
+
+# #################################
+# Public DNS Zone Configuration - #
+# #################################
+
+# Create Azure Public DNS Zone
+resource "azurerm_dns_zone" "public_dns_zone" {
+  name                = "azure.${var.domain_name}"
+  resource_group_name = data.azurerm_resource_group.rg.name
+}
+
+# AWS Route 53 Parent Zone Data Source
+data "aws_route53_zone" "parent" {
+  name         = "${var.domain_name}."
+  private_zone = false
+}
+
+# AWS Route 53 Record for Azure Subdomain Delegation
+resource "aws_route53_record" "azure_subdomain_delegation" {
+  zone_id = data.aws_route53_zone.parent.zone_id
+
+  name = "azure.${var.domain_name}"
+  type = "NS"
+  ttl  = 300
+
+  records = azurerm_dns_zone.public_dns_zone.name_servers
+}
+
+
+# Add ROOT Record Set in DNS Zone
+resource "azurerm_dns_a_record" "dns_record" {
+  depends_on = [azurerm_lb.web_lb ]
+  name                = "@"
+  zone_name           = azurerm_dns_zone.public_dns_zone.name
+  resource_group_name = data.azurerm_resource_group.rg.name
+  ttl                 = 300
+  target_resource_id  = azurerm_public_ip.web_lbpublicip.id
+}
+
+# Add www Record Set in DNS Zone
+resource "azurerm_dns_a_record" "dns_record_www" {
+  depends_on = [azurerm_lb.web_lb ]  
+  name                = "www"
+  zone_name           = azurerm_dns_zone.public_dns_zone.name
+  resource_group_name = data.azurerm_resource_group.rg.name
+  ttl                 = 300
+  target_resource_id  = azurerm_public_ip.web_lbpublicip.id
+}
+
+# Add app1 Record Set in DNS Zone
+resource "azurerm_dns_a_record" "dns_record_app1" {
+  depends_on = [azurerm_lb.web_lb ]
+  name                = "app1"
+  zone_name           = azurerm_dns_zone.public_dns_zone.name
+  resource_group_name = data.azurerm_resource_group.rg.name
+  ttl                 = 300
+  target_resource_id  = azurerm_public_ip.web_lbpublicip.id
+}

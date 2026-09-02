@@ -162,7 +162,10 @@ variable "static_website_error_404_document" {
   type        = string
 }
 
-
+variable "domain_name" {
+  description = "Domain Name used for Azure DNS"
+  type        = string
+}
 
 
 
