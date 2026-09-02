@@ -27,4 +27,12 @@ terraform {
 #     container_name        = "tfstatefiles"
 #     key                   = "project-02-eastus2-terraform.tfstate"
 #   }
+
+# Terraform State Storage using an AWS S3 Bucket that I control
+  backend "s3" {
+    bucket       = "rdobmk-azure-terraformbackend"
+    key          = "azure-architecture/project-02.tfstate"
+    region       = "us-east-1"
+    use_lockfile = true
+  }
 }

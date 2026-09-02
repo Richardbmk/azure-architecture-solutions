@@ -29,7 +29,7 @@ variable "resource_group_name" {
 variable "resource_group_location" {
   description = "Region in which Azure Resources to be created"
   type        = string
-  default     = "eastus2"
+  default     = "westus2"
 }
 
 # Virtual Network, Subnets and Subnet NSG's
