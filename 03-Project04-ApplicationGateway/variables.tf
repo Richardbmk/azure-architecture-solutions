@@ -117,18 +117,6 @@ variable "web_linuxvm_instance_count" {
   }
 }
 
-variable "web_vmss_nsg_inbound_ports" {
-  description = "Web VMSS NSG Inbound Ports"
-  type        = list(string)
-  default     = ["22", "80", "443"]
-}
-
-variable "app_vmss_nsg_inbound_ports" {
-  description = "App VMSS NSG Inbound Ports"
-  type        = list(string)
-  default     = [22, 80, 443]
-}
-
 # Application Gateway Subnet Address Space
 variable "ag_subnet_address" {
   description = "Virtual Network Application Gateway Subnet Address Spaces"
@@ -141,6 +129,19 @@ variable "ag_subnet_name" {
   description = "Virtual Network Application Gateway Subnet Name"
   type        = string
   default     = "agsubnet"
+}
+
+# Linux VM Input Variables Placeholder file.
+variable "app1_web_vmss_nsg_inbound_ports" {
+  description = "App1 Web VMSS NSG Inbound Ports"
+  type        = list(string)
+  default     = [22, 80, 443]
+}
+
+variable "app2_web_vmss_nsg_inbound_ports" {
+  description = "App2 Web VMSS NSG Inbound Ports"
+  type        = list(string)
+  default     = [22, 80, 443]
 }
 
 

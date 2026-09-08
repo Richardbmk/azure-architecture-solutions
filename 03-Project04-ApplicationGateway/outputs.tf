@@ -56,13 +56,6 @@ output "bastion_host_linuxvm_public_ip_address" {
 }
 
 
-# VM Scale Set Outputs
-
-output "web_vmss_id" {
-  description = "Web Virtual Machine Scale Set ID"
-  value       = azurerm_linux_virtual_machine_scale_set.web_vmss.id
-}
-
 # NAT Gateway ID
 output "nat_gw_id" {
   description = "Azure NAT Gateway ID"
@@ -95,4 +88,14 @@ output "web_ag_id" {
 output "web_ag_public_ip_1" {
   description = "Azure Application Gateway Public IP 1"
   value       = azurerm_public_ip.web_ag_publicip.ip_address
+}
+
+output "app1_web_vmss_id" {
+  description = "App1 Web Virtual Machine Scale Set ID"
+  value       = azurerm_linux_virtual_machine_scale_set.app1_web_vmss.id
+}
+
+output "app2_web_vmss_id" {
+  description = "App2 Web Virtual Machine Scale Set ID"
+  value       = azurerm_linux_virtual_machine_scale_set.app2_web_vmss.id
 }

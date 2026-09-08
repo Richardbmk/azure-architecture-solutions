@@ -268,13 +268,13 @@ resource "azurerm_linux_virtual_machine" "bastion_host_linuxvm" {
 # ######################################
 
 # Create Network Security Group using Terraform Dynamic Blocks
-resource "azurerm_network_security_group" "web_vmss_nsg" {
-  name                = "${local.resource_group_prefix}-web-vmss-nsg"
+resource "azurerm_network_security_group" "app1_web_vmss_nsg" {
+  name                = "${local.resource_group_prefix}-app1-web-vmss-nsg"
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
 
   dynamic "security_rule" {
-    for_each = var.web_vmss_nsg_inbound_ports
+    for_each = var.app1_web_vmss_nsg_inbound_ports
     content {
       name                       = "inbound-rule-${security_rule.key}"
       description                = "Inbound Rule ${security_rule.key}"
@@ -290,13 +290,13 @@ resource "azurerm_network_security_group" "web_vmss_nsg" {
   }
 }
 
-resource "azurerm_network_security_group" "app_vmss_nsg" {
-  name                = "${local.resource_group_prefix}-app-vmss-nsg"
+resource "azurerm_network_security_group" "app2_web_vmss_nsg" {
+  name                = "${local.resource_group_prefix}-app2-web-vmss-nsg"
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
 
   dynamic "security_rule" {
-    for_each = var.app_vmss_nsg_inbound_ports
+    for_each = var.app2_web_vmss_nsg_inbound_ports
     content {
       name                       = "inbound-rule-${security_rule.key}"
       description                = "Inbound Rule ${security_rule.key}"
@@ -314,14 +314,13 @@ resource "azurerm_network_security_group" "app_vmss_nsg" {
 
 
 # Azure Linux Virtual Machine Scale Set - App1: Web Tier
-resource "azurerm_linux_virtual_machine_scale_set" "web_vmss" {
-  name                = "${local.resource_group_prefix}-web-vmss"
+resource "azurerm_linux_virtual_machine_scale_set" "app1_web_vmss" {
+  name                = "${local.resource_group_prefix}-web-vmss-app1"
   resource_group_name = data.azurerm_resource_group.rg.name
   location            = data.azurerm_resource_group.rg.location
   sku                 = "Standard_DS1_v2"
   instances           = 2
   admin_username      = "azureuser"
-  # health_probe_id     = azurerm_lb_probe.web_lb_probe.id
 
   admin_ssh_key {
     username   = "azureuser"
@@ -342,21 +341,65 @@ resource "azurerm_linux_virtual_machine_scale_set" "web_vmss" {
   upgrade_mode = "Automatic"
 
   network_interface {
-    name                      = "web-vmss-nic"
+    name                      = "app1-web-vmss-nic"
     primary                   = "true"
-    network_security_group_id = azurerm_network_security_group.web_vmss_nsg.id
+    network_security_group_id = azurerm_network_security_group.app1_web_vmss_nsg.id
     ip_configuration {
-      name      = "internal"
-      primary   = true
-      subnet_id = azurerm_subnet.websubnet.id
-      application_gateway_backend_address_pool_ids = [
-        one(azurerm_application_gateway.web_ag.backend_address_pool).id
-      ]
+      name                                         = "internal"
+      primary                                      = true
+      subnet_id                                    = azurerm_subnet.websubnet.id
+      application_gateway_backend_address_pool_ids = [local.app1_backend_pool_id]
     }
   }
 
-  custom_data = filebase64("${path.module}/scripts/ubuntu-webvm-script.sh")
+  custom_data = filebase64("${path.module}/scripts/ubuntu-webvm01-script.sh")
 
   tags = local.common_tags
 }
 
+
+
+
+# Azure Linux Virtual Machine Scale Set - App2: Web Tier
+resource "azurerm_linux_virtual_machine_scale_set" "app2_web_vmss" {
+  name                = "${local.resource_group_prefix}-web-vmss-app2"
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  sku                 = "Standard_DS1_v2"
+  instances           = 2
+  admin_username      = "azureuser"
+
+  admin_ssh_key {
+    username   = "azureuser"
+    public_key = file("~/.ssh/sre-keys.pub")
+  }
+  source_image_reference {
+    publisher = "canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts-gen2"
+    version   = "latest"
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  upgrade_mode = "Automatic"
+
+  network_interface {
+    name                      = "app2-web-vmss-nic"
+    primary                   = "true"
+    network_security_group_id = azurerm_network_security_group.app2_web_vmss_nsg.id
+    ip_configuration {
+      name                                         = "internal"
+      primary                                      = true
+      subnet_id                                    = azurerm_subnet.websubnet.id
+      application_gateway_backend_address_pool_ids = [local.app2_backend_pool_id]
+    }
+  }
+
+  custom_data = filebase64("${path.module}/scripts/ubuntu-webvm02-script.sh")
+
+  tags = local.common_tags
+}

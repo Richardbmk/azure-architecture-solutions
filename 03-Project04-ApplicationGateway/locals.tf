@@ -51,15 +51,36 @@ locals {
     "130" : "65200-65535"
   }
 
-  # Azure Application Gateway - Locals Block 
   # Generic 
   frontend_port_name             = "${azurerm_virtual_network.vnet.name}-feport"
   frontend_ip_configuration_name = "${azurerm_virtual_network.vnet.name}-feip"
   listener_name                  = "${azurerm_virtual_network.vnet.name}-httplstn"
   request_routing_rule1_name     = "${azurerm_virtual_network.vnet.name}-rqrt-1"
+  url_path_map                   = "${azurerm_virtual_network.vnet.name}-upm-app1-app2"
 
   # App1
   backend_address_pool_name_app1 = "${azurerm_virtual_network.vnet.name}-beap-app1"
   http_setting_name_app1         = "${azurerm_virtual_network.vnet.name}-be-htst-app1"
   probe_name_app1                = "${azurerm_virtual_network.vnet.name}-be-probe-app1"
+
+  # App2
+  backend_address_pool_name_app2 = "${azurerm_virtual_network.vnet.name}-beap-app2"
+  http_setting_name_app2         = "${azurerm_virtual_network.vnet.name}-be-htst-app2"
+  probe_name_app2                = "${azurerm_virtual_network.vnet.name}-be-probe-app2"
+
+  # Default Redirect on Root Context (/)
+  redirect_configuration_name = "${azurerm_virtual_network.vnet.name}-rdrcfg"
+
+  # Choose backend pool
+  app1_backend_pool_id = one([
+    for pool in azurerm_application_gateway.web_ag.backend_address_pool :
+    pool.id
+    if pool.name == local.backend_address_pool_name_app1
+  ])
+
+  app2_backend_pool_id = one([
+    for pool in azurerm_application_gateway.web_ag.backend_address_pool :
+    pool.id
+    if pool.name == local.backend_address_pool_name_app2
+  ])
 }
