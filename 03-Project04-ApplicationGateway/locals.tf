@@ -54,22 +54,21 @@ locals {
   # Generic 
   frontend_port_name             = "${azurerm_virtual_network.vnet.name}-feport"
   frontend_ip_configuration_name = "${azurerm_virtual_network.vnet.name}-feip"
-  listener_name                  = "${azurerm_virtual_network.vnet.name}-httplstn"
-  request_routing_rule1_name     = "${azurerm_virtual_network.vnet.name}-rqrt-1"
-  url_path_map                   = "${azurerm_virtual_network.vnet.name}-upm-app1-app2"
+  #url_path_map                   =  "${azurerm_virtual_network.vnet.name}-upm-app1-app2"  
 
   # App1
   backend_address_pool_name_app1 = "${azurerm_virtual_network.vnet.name}-beap-app1"
   http_setting_name_app1         = "${azurerm_virtual_network.vnet.name}-be-htst-app1"
   probe_name_app1                = "${azurerm_virtual_network.vnet.name}-be-probe-app1"
+  listener_name_app1             = "${azurerm_virtual_network.vnet.name}-httplstn-app1"
+  request_routing_rule_name_app1 = "${azurerm_virtual_network.vnet.name}-rqrt-app1"
 
   # App2
   backend_address_pool_name_app2 = "${azurerm_virtual_network.vnet.name}-beap-app2"
   http_setting_name_app2         = "${azurerm_virtual_network.vnet.name}-be-htst-app2"
   probe_name_app2                = "${azurerm_virtual_network.vnet.name}-be-probe-app2"
-
-  # Default Redirect on Root Context (/)
-  redirect_configuration_name = "${azurerm_virtual_network.vnet.name}-rdrcfg"
+  listener_name_app2             = "${azurerm_virtual_network.vnet.name}-httplstn-app2"
+  request_routing_rule_name_app2 = "${azurerm_virtual_network.vnet.name}-rqrt-app2"
 
   # Choose backend pool
   app1_backend_pool_id = one([

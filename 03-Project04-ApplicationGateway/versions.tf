@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = ">= 5.0"
     }
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
+    }
     random = {
       source  = "hashicorp/random"
       version = ">= 3.0"
@@ -19,7 +23,7 @@ terraform {
   # Terraform State Storage using an AWS S3 Bucket that I control
   backend "s3" {
     bucket       = "rdobmk-azure-terraformbackend"
-    key          = "azure-architecture/project-04-application-gateway01.tfstate"
+    key          = "azure-architecture/project-04-application-gateway-multisite.tfstate"
     region       = "us-east-1"
     use_lockfile = true
   }

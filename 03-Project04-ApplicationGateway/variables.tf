@@ -144,6 +144,11 @@ variable "app2_web_vmss_nsg_inbound_ports" {
   default     = [22, 80, 443]
 }
 
+variable "domain_name" {
+  description = "Domain Name used for Azure DNS"
+  type        = string
+}
+
 
 
 

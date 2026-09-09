@@ -52,11 +52,6 @@ resource "azurerm_application_gateway" "web_ag" {
     tier     = "Basic"
     capacity = 2
   }
-  # Only possible with Standard_V2 tier
-  # autoscale_configuration {
-  #   min_capacity = 0
-  #   max_capacity = 10
-  # }
   # END: --------------------------------------- #
 
   gateway_ip_configuration {
@@ -75,15 +70,28 @@ resource "azurerm_application_gateway" "web_ag" {
     public_ip_address_id = azurerm_public_ip.web_ag_publicip.id
   }
 
-  # Listener: HTTP 80
+
+  # Listerner: HTTP Port 80 with app1.azure.ricardoboriba.net
   http_listener {
-    name                           = local.listener_name
+    name                           = local.listener_name_app1
     frontend_ip_configuration_name = local.frontend_ip_configuration_name
     frontend_port_name             = local.frontend_port_name
     protocol                       = "Http"
+    host_names                     = ["app1.azure.${var.domain_name}"]
   }
 
-  # App1 Configs
+
+  # Listerner: HTTP Port 80 with app2.azure.ricardoboriba.net 
+  http_listener {
+    name                           = local.listener_name_app2
+    frontend_ip_configuration_name = local.frontend_ip_configuration_name
+    frontend_port_name             = local.frontend_port_name
+    protocol                       = "Http"
+    host_names                     = ["app2.azure.${var.domain_name}"]
+  }
+
+
+  # App1 Backend Configs
   backend_address_pool {
     name = local.backend_address_pool_name_app1
   }
@@ -138,39 +146,73 @@ resource "azurerm_application_gateway" "web_ag" {
     }
   }
 
-  # Path based Routing Rule
+
+  # Routing Rule - app1.azure.ricardoboriba.net
   request_routing_rule {
-    name               = local.request_routing_rule1_name
-    priority           = 1
-    rule_type          = "PathBasedRouting"
-    http_listener_name = local.listener_name
-    url_path_map_name  = local.url_path_map
+    name                       = local.request_routing_rule_name_app1
+    rule_type                  = "Basic"
+    priority                   = 100
+    http_listener_name         = local.listener_name_app1
+    backend_address_pool_name  = local.backend_address_pool_name_app1
+    backend_http_settings_name = local.http_setting_name_app1
   }
 
-
-  # URL Path Map - Define Path based Routing    
-  url_path_map {
-    name                                = local.url_path_map
-    default_redirect_configuration_name = local.redirect_configuration_name
-    path_rule {
-      name                       = "app1-rule"
-      paths                      = ["/app1/*"]
-      backend_address_pool_name  = local.backend_address_pool_name_app1
-      backend_http_settings_name = local.http_setting_name_app1
-    }
-    path_rule {
-      name                       = "app2-rule"
-      paths                      = ["/app2/*"]
-      backend_address_pool_name  = local.backend_address_pool_name_app2
-      backend_http_settings_name = local.http_setting_name_app2
-    }
+  # Routing Rule - app2.azure.ricardoboriba.net
+  request_routing_rule {
+    name                       = local.request_routing_rule_name_app2
+    rule_type                  = "Basic"
+    priority                   = 200
+    http_listener_name         = local.listener_name_app2
+    backend_address_pool_name  = local.backend_address_pool_name_app2
+    backend_http_settings_name = local.http_setting_name_app2
   }
 
-  # Default Root Context (/ - Redirection Config)
-  redirect_configuration {
-    name          = local.redirect_configuration_name
-    redirect_type = "Permanent"
-    target_url    = "https://ricardoboriba.com/"
-  }
+}
 
+
+
+# #################################
+# Public DNS Zone Configuration - #
+# #################################
+
+# Create Azure Public DNS Zone
+resource "azurerm_dns_zone" "public_dns_zone" {
+  name                = "azure.${var.domain_name}"
+  resource_group_name = data.azurerm_resource_group.rg.name
+}
+
+# AWS Route 53 Parent Zone Data Source
+data "aws_route53_zone" "parent" {
+  name         = "${var.domain_name}."
+  private_zone = false
+}
+
+# AWS Route 53 Record for Azure Subdomain Delegation
+resource "aws_route53_record" "azure_subdomain_delegation" {
+  zone_id = data.aws_route53_zone.parent.zone_id
+
+  name = "azure.${var.domain_name}"
+  type = "NS"
+  ttl  = 300
+
+  records = azurerm_dns_zone.public_dns_zone.name_servers
+}
+
+# Add app2 Record Set in DNS Zone
+resource "azurerm_dns_a_record" "dns_record_app2" {
+  depends_on = [azurerm_application_gateway.web_ag]
+  name                = "app2"
+  zone_name           = azurerm_dns_zone.public_dns_zone.name
+  resource_group_name = data.azurerm_resource_group.rg.name
+  ttl                 = 300
+  target_resource_id  = azurerm_public_ip.web_ag_publicip.id
+}
+# Add app1 Record Set in DNS Zone
+resource "azurerm_dns_a_record" "dns_record_app1" {
+  depends_on = [azurerm_application_gateway.web_ag]
+  name                = "app1"
+  zone_name           = azurerm_dns_zone.public_dns_zone.name
+  resource_group_name = data.azurerm_resource_group.rg.name
+  ttl                 = 300
+  target_resource_id  = azurerm_public_ip.web_ag_publicip.id
 }

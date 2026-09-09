@@ -99,3 +99,14 @@ output "app2_web_vmss_id" {
   description = "App2 Web Virtual Machine Scale Set ID"
   value       = azurerm_linux_virtual_machine_scale_set.app2_web_vmss.id
 }
+
+# FQDN 
+output "fqdn_public_dns_1" {
+  description = "FQDN Public DNS 1"
+  value       = azurerm_dns_a_record.dns_record_app1.fqdn
+}
+
+output "fqdn_public_dns_2" {
+  description = "FQDN Public DNS 2"
+  value       = azurerm_dns_a_record.dns_record_app2.fqdn
+}
