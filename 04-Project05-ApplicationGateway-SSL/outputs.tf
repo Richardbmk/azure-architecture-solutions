@@ -95,13 +95,48 @@ output "app1_web_vmss_id" {
   value       = azurerm_linux_virtual_machine_scale_set.app1_web_vmss.id
 }
 
-# FQDN 
-output "fqdn_public_dns_1" {
-  description = "FQDN Public DNS 1"
-  value       = azurerm_dns_a_record.dns_record_app1.fqdn
+# # FQDN 
+# output "fqdn_public_dns_1" {
+#   description = "FQDN Public DNS 1"
+#   value       = azurerm_dns_a_record.dns_record_app1.fqdn
+# }
+
+# Storage Account Outputs
+output "storage_account_primary_access_key" {
+  value     = azurerm_storage_account.storage_account.primary_access_key
+  sensitive = true
 }
 
-output "fqdn_public_dns_2" {
-  description = "FQDN Public DNS 2"
-  value       = azurerm_dns_a_record.dns_record_app2.fqdn
+output "storage_account_primary_web_endpoint" {
+  value = azurerm_storage_account.storage_account.primary_web_endpoint
+}
+output "storage_account_primary_web_host" {
+  value = azurerm_storage_account.storage_account.primary_web_host
+}
+output "storage_account_name" {
+  value = azurerm_storage_account.storage_account.name
+}
+
+output "user_assigned_identity_id" {
+  value = azurerm_user_assigned_identity.appag_umid.id
+}
+output "user_assigned_identity_principal_id" {
+  value = azurerm_user_assigned_identity.appag_umid.principal_id
+}
+output "user_assigned_identity_client_id" {
+  value = azurerm_user_assigned_identity.appag_umid.client_id
+}
+output "user_assigned_identity_tenant_id" {
+  value = azurerm_user_assigned_identity.appag_umid.tenant_id
+}
+
+output "azurerm_key_vault_certificate_id" {
+  value = azurerm_key_vault_certificate.my_cert_1.id
+}
+
+output "azurerm_key_vault_certificate_secret_id" {
+  value = azurerm_key_vault_certificate.my_cert_1.secret_id
+}
+output "azurerm_key_vault_certificate_version" {
+  value = azurerm_key_vault_certificate.my_cert_1.version
 }
