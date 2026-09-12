@@ -269,6 +269,8 @@ resource "azurerm_linux_virtual_machine" "bastion_host_linuxvm" {
     sku       = "22_04-lts-gen2"
     version   = "latest"
   }
+
+  custom_data = filebase64("${path.module}/scripts/ubuntu-bastion-script.sh")
 }
 
 # ######################################
@@ -518,12 +520,12 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
   sku_name               = "B_Standard_B1ms"
   version                = "15"
 
-  delegated_subnet_id          = azurerm_subnet.dbsubnet.id
-  private_dns_zone_id          = azurerm_private_dns_zone.postgres_dns.id
+  delegated_subnet_id           = azurerm_subnet.dbsubnet.id
+  private_dns_zone_id           = azurerm_private_dns_zone.postgres_dns.id
   public_network_access_enabled = false
 
-  storage_mb = 32768
-  storage_tier     = "P4"
+  storage_mb        = 32768
+  storage_tier      = "P4"
   auto_grow_enabled = false
 
   backup_retention_days        = 7
