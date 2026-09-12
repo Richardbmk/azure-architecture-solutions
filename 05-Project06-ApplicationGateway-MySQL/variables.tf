@@ -184,14 +184,12 @@ variable "password_httpd_ssl_pfx" {
 variable "postgres_db_name" {
   description = "Azure PostgreSQL Database Name"
   type        = string
-  default     = "webappdb"
 }
 
 # DB Username - Enable Sensitive flag
 variable "postgres_db_username" {
   description = "Azure PostgreSQL Database Administrator Username"
   type        = string
-  default     = "dbadmin"
 }
 
 # DB Password - Enable Sensitive flag
@@ -199,14 +197,12 @@ variable "postgres_db_password" {
   description = "Azure PostgreSQL Database Administrator Password"
   type        = string
   sensitive   = true
-  default     = "P@ssw0rd123456!"
 }
 
 # DB Schema Name
 variable "postgres_db_schema" {
   description = "Azure PostgreSQL Database Schema Name"
   type        = string
-  default     = "webappdb"
 }
 
 
