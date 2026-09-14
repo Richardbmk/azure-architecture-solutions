@@ -10,7 +10,7 @@ Overall, the project demonstrates how Terraform can be used to build a reusable 
 
 # Architecture solution
 
-In this section we provide a visual representation of the architecture solution, illustrating the various components and their interactions within the Azure environment. The first diagram is done with Mermaid and the second diagram is done using Azure Architecture icons.
+In this section we provide a visual representation of the architecture solution, illustrating the various components and their interactions within the Azure environment. One of the diagrams is done with Mermaid and the other diagram is done using Azure Architecture icons.
 
 ![Azure Architecture Solution](./assets/azure-architecture-solutions-Project01.png)
 
