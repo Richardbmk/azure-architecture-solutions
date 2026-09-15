@@ -146,7 +146,3 @@ For Project 02, destroying the Terraform configuration also removes the Azure DN
 - **SSH key errors:** create `~/.ssh/sre-keys.pub` or update the project configuration to reference the correct public key.
 - **DNS errors:** verify domain ownership, Route 53 permissions, Azure DNS nameservers, and delegation records before testing public names.
 - **Plan drift:** inspect the plan and Azure resources before using `-refresh-only`; do not discard state or manually remove resources without understanding the resulting drift.
-
-## License
-
-See the repository history and project files for the applicable licensing information.

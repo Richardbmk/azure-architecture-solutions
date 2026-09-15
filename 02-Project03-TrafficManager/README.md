@@ -1,16 +1,16 @@
 # Azure Traffic Manager with Multi-Region Load Balancing Project
 
-This project demonstrates how to set up Azure Traffic Manager for global traffic distribution across multiple geographic regions in Microsoft Azure. Traffic Manager provides intelligent routing of user traffic to the most optimal endpoint based on performance, geographic proximity, or failover capabilities using Terraform and bash scripts to automate the deployment and configuration process.
+This project demonstrates how to set up Azure Traffic Manager for global traffic distribution across multiple geographic regions in Microsoft Azure. Traffic Manager provides intelligent routing of user traffic to the most optimal endpoint based on performance, geographic proximity, or failover capabilities. This project uses Terraform and bash scripts to automate the deployment and configuration process.
 
 The solution provisions a complete multi-region networking foundation with dedicated networking segments for web and application workloads deployed in both East US and West US regions. Each regional deployment consists of multiple Linux web servers running Apache HTTP Server behind an Azure Load Balancer. Azure Traffic Manager acts as a global load balancer, intelligently routing user requests to the optimal regional endpoint based on configured routing policies.
-
-The architecture provides geographic redundancy and high availability by distributing application workloads across multiple Azure regions. Traffic Manager continuously monitors the health of regional endpoints and automatically routes traffic away from unhealthy regions, ensuring uninterrupted service availability. Administrative access to private virtual machines in each region is supported through Azure Bastion for secure management.
 
 Overall, the project demonstrates how Terraform can be used to build a resilient, globally distributed Azure infrastructure that combines multi-region networking, regional load balancing, intelligent traffic distribution, and secure administration concepts.
 
 # Architecture solution
 
 In this section we provide a visual representation of the architecture solution, illustrating the various components and their interactions within the Azure environment.
+
+![Azure Architecture Solution](./assets/azure-architecture-solutions-Project03.png)
 
 **Virtual Networks:**
 
@@ -25,7 +25,6 @@ In this section we provide a visual representation of the architecture solution,
 | **Application Subnet** | `10.0.2.0/24` | Reserved for application-tier workloads          |
 | **Database Subnet**    | `10.0.3.0/24` | Reserved for database services                   |
 | **Management Subnet**  | `10.0.4.0/24` | Used for administrative and management workloads |
-| **AzureBastionSubnet** | `10.0.5.0/27` | Dedicated subnet required by Azure Bastion       |
 
 ## West US Region Network Segments
 
@@ -35,50 +34,6 @@ In this section we provide a visual representation of the architecture solution,
 | **Application Subnet** | `10.1.2.0/24` | Reserved for application-tier workloads          |
 | **Database Subnet**    | `10.1.3.0/24` | Reserved for database services                   |
 | **Management Subnet**  | `10.1.4.0/24` | Used for administrative and management workloads |
-| **AzureBastionSubnet** | `10.1.5.0/27` | Dedicated subnet required by Azure Bastion       |
-
-```mermaid
-flowchart TB
-    Internet((Internet Users))
-
-    TMProfile["Azure Traffic Manager<br/>Global Routing Policy<br/>Performance or Failover"]
-
-    EastUSRegion["East US Region<br/>10.0.0.0/16"]
-    WestUSRegion["West US Region<br/>10.1.0.0/16"]
-
-    EastLBPublicIP["Public IP<br/>fin-dev-eastus-lbpublicip"]
-    EastLoadBalancer["Azure Standard Load Balancer<br/>fin-dev-eastus-web-lb"]
-    EastVM1["Ubuntu Web VM 1<br/>fin-dev-eastus-web-linuxvm-vm1"]
-    EastVM2["Ubuntu Web VM 2<br/>fin-dev-eastus-web-linuxvm-vm2"]
-    EastBastion["Azure Bastion<br/>fin-dev-eastus-bastion-service"]
-
-    WestLBPublicIP["Public IP<br/>fin-dev-westus-lbpublicip"]
-    WestLoadBalancer["Azure Standard Load Balancer<br/>fin-dev-westus-web-lb"]
-    WestVM1["Ubuntu Web VM 1<br/>fin-dev-westus-web-linuxvm-vm1"]
-    WestVM2["Ubuntu Web VM 2<br/>fin-dev-westus-web-linuxvm-vm2"]
-    WestBastion["Azure Bastion<br/>fin-dev-westus-bastion-service"]
-
-    Internet --> TMProfile
-
-    TMProfile --> EastLBPublicIP
-    TMProfile --> WestLBPublicIP
-
-    EastUSRegion --> EastLBPublicIP
-    EastLBPublicIP --> EastLoadBalancer
-    EastLoadBalancer --> EastVM1
-    EastLoadBalancer --> EastVM2
-    EastUSRegion --> EastBastion
-    EastBastion -. Administrative access .-> EastVM1
-    EastBastion -. Administrative access .-> EastVM2
-
-    WestUSRegion --> WestLBPublicIP
-    WestLBPublicIP --> WestLoadBalancer
-    WestLoadBalancer --> WestVM1
-    WestLoadBalancer --> WestVM2
-    WestUSRegion --> WestBastion
-    WestBastion -. Administrative access .-> WestVM1
-    WestBastion -. Administrative access .-> WestVM2
-```
 
 # Data Flow
 
@@ -134,7 +89,6 @@ The environment is composed of several Azure services deployed across multiple r
 | **Application Subnets**             | Reserved for future application-tier workloads and internal services in each region.                                                                |
 | **Database Subnets**                | Reserved for future database services and backend data workloads in each region.                                                                    |
 | **Management Subnets**              | Provide dedicated network segments for administrative and management resources in each region.                                                      |
-| **AzureBastionSubnets**             | Dedicated subnets required by the Azure Bastion managed service in each region.                                                                     |
 | **Regional Linux Virtual Machines** | Run the Apache web server in each region and host the sample web application across multiple geographic locations.                                  |
 | **Regional Load Balancers**         | Provide the regional entry points for the application and distribute incoming traffic across the available web virtual machines within each region. |
 | **Health Probes**                   | Continuously check the availability of backend web servers in each region and report status to Traffic Manager.                                     |
