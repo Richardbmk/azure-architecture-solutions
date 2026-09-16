@@ -1,4 +1,4 @@
-# Linux Linux Virtual Machine (VM) with Load Balancer Project
+# Linux Virtual Machine (VM) with Load Balancer Project
 
 This project demonstrates how to set up a Linux Virtual Machine (VM) in Microsoft Azure, with a load balancer to distribute incoming traffic across multiple instances for high availability and reliability using Terraform and bash scripts to automate the deployment and configuration process.
 

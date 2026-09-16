@@ -6,14 +6,14 @@ The projects are independent Terraform root modules. Deploy them from their own 
 
 ## Projects
 
-| Project                                          | Architecture focus                                                                                                                | Documentation                                                     |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| 00 - Project 01 - Linux VM                       | Linux web VMs, Standard Load Balancer, NAT Gateway, Bastion, and network segmentation                                             | [Project README](00-Project01-LinuxVM/README.md)                  |
-| 01 - Project 02 - Web VMSS                       | Web and application VMSS tiers, public and internal load balancers, storage, private DNS, public DNS, and AWS Route 53 delegation | [Project README](01-Project02-WebVMSS/README.md)                  |
-| 02 - Project 03 - Traffic Manager                | Multi-region web deployments in East US and West US with Azure Traffic Manager                                                    | [Project README](02-Project03-TrafficManager/README.md)           |
-| 03 - Project 04 - Application Gateway            | Layer 7 routing with Azure Application Gateway                                                                                    | [Project README](03-Project04-ApplicationGateway/README.md)       |
-| 04 - Project 05 - Application Gateway SSL        | Application Gateway HTTP-to-HTTPS redirect, Key Vault certificate, managed identity, and custom error pages                       | [Project README](04-Project05-ApplicationGateway-SSL/README.md)   |
-| 05 - Project 06 - Application Gateway PostgreSQL | Application Gateway, two-instance VMSS, private PostgreSQL Flexible Server, private DNS, and custom error pages                   | [Project README](05-Project06-ApplicationGateway-MySQL/README.md) |
+| Project                                          | Architecture focus                                                                                                                | Documentation                                                          |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 00 - Project 01 - Linux VM                       | Linux web VMs, Standard Load Balancer, NAT Gateway, Bastion, and network segmentation                                             | [Project README](00-Project01-LinuxVM/README.md)                       |
+| 01 - Project 02 - Web VMSS                       | Web and application VMSS tiers, public and internal load balancers, storage, private DNS, public DNS, and AWS Route 53 delegation | [Project README](01-Project02-WebVMSS/README.md)                       |
+| 02 - Project 03 - Traffic Manager                | Multi-region web deployments in East US and West US with Azure Traffic Manager                                                    | [Project README](02-Project03-TrafficManager/README.md)                |
+| 03 - Project 04 - Application Gateway            | Layer 7 routing with Azure Application Gateway                                                                                    | [Project README](03-Project04-ApplicationGateway/README.md)            |
+| 04 - Project 05 - Application Gateway SSL        | Application Gateway HTTP-to-HTTPS redirect, Key Vault certificate, managed identity, and custom error pages                       | [Project README](04-Project05-ApplicationGateway-SSL/README.md)        |
+| 05 - Project 06 - Application Gateway PostgreSQL | Application Gateway, two-instance VMSS, private PostgreSQL Flexible Server, private DNS, and custom error pages                   | [Project README](05-Project06-ApplicationGateway-PostgreSQL/README.md) |
 
 ## Architecture Progression
 
